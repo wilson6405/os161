@@ -192,22 +192,30 @@ void
 lock_acquire(struct lock *lock)
 {
 	/* Call this (atomically) before waiting for a lock */
-	HANGMAN_WAIT(&curthread->t_hangman, &lock->lk_hangman);
+	//HANGMAN_WAIT(&curthread->t_hangman, &lock->lk_hangman);
 
 	// Write this
 	KASSERT(lock != NULL);
+	KASSERT(curthread->t_in_interrupt == false);
 
 	spinlock_acquire(&lock->lk_lock);
-	while(lock_do_i_hold(lock))
+	
+	while(!lock_do_i_hold(lock))  // before acquire, ensure no one have lock
 	{
+		if (lock->lk_holder == NULL)
+		{
+			lock->lk_holder = curthread;
+
+			spinlock_release(&lock->lk_lock);
+			break;
+		}
+		
 		wchan_sleep(lock->lk_wchan, &lock->lk_lock);
 	}
-	KASSERT(!lock_do_i_hold(lock));
-	lock->lk_holder = curthread;
-	spinlock_release(&lock->lk_lock);
+	
 
 	/* Call this (atomically) once the lock is acquired */
-	HANGMAN_ACQUIRE(&curthread->t_hangman, &lock->lk_hangman);
+	//HANGMAN_ACQUIRE(&curthread->t_hangman, &lock->lk_hangman);
 
 }
 
@@ -215,7 +223,7 @@ void
 lock_release(struct lock *lock)
 {
 	/* Call this (atomically) when the lock is released */
-	HANGMAN_RELEASE(&curthread->t_hangman, &lock->lk_hangman);
+	//HANGMAN_RELEASE(&curthread->t_hangman, &lock->lk_hangman);
 
 	// Write this
 	KASSERT(lock != NULL);
@@ -234,6 +242,7 @@ bool
 lock_do_i_hold(struct lock *lock)
 {
 	// Write this
+	KASSERT(lock != NULL);
 	return (lock->lk_holder == curthread);
 }
 
