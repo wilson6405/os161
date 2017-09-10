@@ -59,7 +59,7 @@
 struct wchan {
 	const char *wc_name;		/* name for this channel */
 	struct threadlist wc_threads;	/* list of waiting threads */
-	struct spinlock wc_lock; // lock for mutual exclusion
+	//struct spinlock wc_lock; // lock for mutual exclusion
 };
 
 /* Master array of CPUs. */
@@ -1048,7 +1048,7 @@ wchan_sleep(struct wchan *wc, struct spinlock *lk)
 
 /*
  * Lock and unlock a wait channel, respectively.
- */
+
 void
 wchan_lock(struct wchan *wc)
 {
@@ -1060,6 +1060,7 @@ wchan_unlock(struct wchan *wc)
 {
 	spinlock_release(&wc->wc_lock);
 }
+ */
 
 
 /*
