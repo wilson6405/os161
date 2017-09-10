@@ -75,10 +75,8 @@ void V(struct semaphore *);
 struct lock {
         char *lk_name;
         struct wchan *lk_wchan; // wait channel
-        struct spinlock lk_spinlock; // spinlock
-        struct thread *lk_holder; // holder
-        volatile bool lk_stat; // FALSE means unlock, TRUE means lock
-
+        struct spinlock lk_lock; // spinlock
+        volatile struct thread *lk_holder; // lock use holder to detect lock or not
         HANGMAN_LOCKABLE(lk_hangman);   /* Deadlock detector hook. */
         // add what you need here
         // (don't forget to mark things volatile as needed)
@@ -120,6 +118,8 @@ bool lock_do_i_hold(struct lock *);
 struct cv {
         char *cv_name;
         // add what you need here
+        struct wchan *cv_wchan;
+        struct spinlock cv_spinlock;
         // (don't forget to mark things volatile as needed)
 };
 
